@@ -12,7 +12,7 @@ description: Guidelines, restricted primitive whitelist, and verification rules 
 
 ## Environment & Language
 - **Language & Version:** Racket 8.x starting with `#lang racket/base` only.
-- **Target Files:** `code/23BCE123_q3.rkt` (S1) and `code/23BCE123_q4.rkt` (S2), containing only definitions (no top-level function calls or prints when loaded; the grader adds calls).
+- **Target Files:** `code/58_q3.rkt` (S1) and `code/58_q4.rkt` (S2), containing only definitions (no top-level function calls or prints when loaded; the grader adds calls).
 
 ## Strict Built-In Whitelist
 Only the following built-ins may be used:
@@ -20,7 +20,7 @@ Only the following built-ins may be used:
 - **Pairs & Lists:** `cons`, `car`, `cdr`, `list`, and compositions of `car`/`cdr` up to 4 levels (`cadr`, `cddr`, `caddr`, `cdddr`, `cadddr`, `cddddr`, etc.)
 - **Predicates & Association:** `null?`, `pair?`, `eq?`, `assq`, `assoc`
 - **Arithmetic & Comparison:** `+`, `-`, `*`, `/`, `<`, `>`, `<=`, `>=`, `=`, `max`
-- **I/O:** `display`, `newline` (and `read` in `code/23BCE123_q4.rkt` / S2 only)
+- **I/O:** `display`, `newline` (and `read` in `code/58_q4.rkt` / S2 only)
 
 ### Explicitly Forbidden Constructs
 - **No mutation or non-list data structures:** No `set!`, vectors, hash tables, or strings.
@@ -35,4 +35,4 @@ Only the following built-ins may be used:
 ## Running & Testing Code
 - **Run S1:**
   ```bash
-  racket code/23BCE123_q3.rkt
+  racket code/58_q3.rkt

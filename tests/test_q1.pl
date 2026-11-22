@@ -2,7 +2,7 @@
 % Run from the GROUP42 repository root:
 %   swipl -q -s tests/test_q1.pl -g run_tests -t halt
 
-:- consult('../code/23BCE123_q1.pl').
+:- consult('../code/58_q1.pl').
 
 :- begin_tests(q1).
 

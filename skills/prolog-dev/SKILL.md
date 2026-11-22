@@ -7,7 +7,7 @@ description: Guidelines and conventions for writing, testing, and reviewing SWI-
 
 ## Environment & Language
 - **Language & Version:** SWI-Prolog 9.x.
-- **Target Files:** `23BCE123_q1.pl` and `23BCE123_q2.pl` inside `code/`, containing only definitions (no `initialization` directives).
+- **Target Files:** `58_q1.pl` and `58_q2.pl` inside `code/`, containing only definitions (no `initialization` directives).
 - **Allowed Libraries Only:** `lists`, `apply`, `yall`, `aggregate`.
 
 ## Coding Conventions
@@ -19,4 +19,4 @@ description: Guidelines and conventions for writing, testing, and reviewing SWI-
 ## Running & Testing Code
 - **Running `main/0`:**
   ```bash
-  swipl -q -f code/23BCE123_q1.pl -g main -t halt
+  swipl -q -f code/58_q1.pl -g main -t halt

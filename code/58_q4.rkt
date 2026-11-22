@@ -1,55 +1,51 @@
 #lang racket/base
 
-; Calculate the length of a list using tail recursion.
+;; ---------- S2.b: own helpers (no length / reverse / map allowed) ----------
 (define (my-length lst)
-  (let loop ((remaining lst) (count 0))
-    (if (null? remaining)
-        count
-        (loop (cdr remaining) (+ count 1)))))
+  (let loop ((l lst) (n 0))
+    (if (null? l)
+        n
+        (loop (cdr l) (+ n 1)))))
 
-; Reverse a list using tail recursion.
 (define (my-reverse lst)
-  (let loop ((remaining lst) (result '()))
-    (if (null? remaining)
-        result
-        (loop (cdr remaining)
-              (cons (car remaining) result)))))
+  (let loop ((l lst) (acc '()))
+    (if (null? l)
+        acc
+        (loop (cdr l) (cons (car l) acc)))))
 
-; Apply a function to every element of a list.
+;; tail-recursive map, safe for 10,000-element lists
 (define (my-map f lst)
-  (let loop ((remaining lst) (result '()))
-    (if (null? remaining)
-        (my-reverse result)
-        (loop (cdr remaining)
-              (cons (f (car remaining)) result)))))
+  (let loop ((l lst) (acc '()))
+    (if (null? l)
+        (my-reverse acc)
+        (loop (cdr l) (cons (f (car l)) acc)))))
 
-; Higher-order function that creates a nested-list inserter.
+;; () counts as a list too, since pair? is #f for '()
+(define (my-list? e)
+  (or (null? e) (pair? e)))
+
+;; ---------- S2.c: higher-order inserter ----------
+;; Returns a function that puts x at the front of every list (at every level)
+;; whose ORIGINAL length satisfies len-ok?
 (define (make-inserter x len-ok?)
-  (letrec
-      ((insert-list
-        (lambda (lst)
-          (let* ((original-length (my-length lst))
-                 (processed
-                  (my-map
-                   (lambda (item)
-                     (if (or (null? item) (pair? item))
-                         (insert-list item)
-                         item))
-                   lst)))
-            (if (len-ok? original-length)
-                (cons x processed)
-                processed)))))
-    insert-list))
+  (letrec ((insert
+            (lambda (lst)
+              (let ((processed
+                     (my-map (lambda (e) (if (my-list? e) (insert e) e))
+                             lst)))
+                (if (len-ok? (my-length lst))
+                    (cons x processed)
+                    processed)))))
+    insert))
 
-; Insert x at the front of every list whose original length is less than n.
+;; Single definition of insert-if-short, built on make-inserter
 (define (insert-if-short x lst n)
   ((make-inserter x (lambda (len) (< len n))) lst))
 
-; Read x, lst and n from standard input and print the result.
+;; ---------- S2.a ----------
 (define (print-insert-result)
-  (let* ((x (read))
+  (let* ((x   (read))
          (lst (read))
-         (n (read))
-         (result (insert-if-short x lst n)))
-    (display result)
+         (n   (read)))
+    (display (insert-if-short x lst n))
     (newline)))

@@ -1,42 +1,37 @@
 #lang racket/base
 
-(provide print-inorder
-         print-all-traversals
-         print-height-and-leaves)
-; Helper: append two lists without using the built-in append.
-(define (my-append lst1 lst2)
-  (if (null? lst1)
-      lst2
-      (cons (car lst1)
-            (my-append (cdr lst1) lst2))))
+; Accumulator-based inorder traversal (left, root, right) -> O(N), no append.
+(define (inorder-acc tree acc)
+  (if (null? tree)
+      acc
+      (inorder-acc (cadr tree)
+                   (cons (car tree)
+                         (inorder-acc (caddr tree) acc)))))
 
-; Inorder traversal: left, root, right.
 (define (inorder tree)
-  (if (null? tree)
-      '()
-      (my-append
-       (inorder (cadr tree))
-       (cons (car tree)
-             (inorder (caddr tree))))))
+  (inorder-acc tree '()))
 
-; Preorder traversal: root, left, right.
-(define (preorder tree)
+; Accumulator-based preorder traversal (root, left, right) -> O(N), no append.
+(define (preorder-acc tree acc)
   (if (null? tree)
-      '()
+      acc
       (cons (car tree)
-            (my-append
-             (preorder (cadr tree))
-             (preorder (caddr tree))))))
+            (preorder-acc (cadr tree)
+                          (preorder-acc (caddr tree) acc)))))
 
-; Postorder traversal: left, right, root.
-(define (postorder tree)
+(define (preorder tree)
+  (preorder-acc tree '()))
+
+; Accumulator-based postorder traversal (left, right, root) -> O(N), no append.
+(define (postorder-acc tree acc)
   (if (null? tree)
-      '()
-      (my-append
-       (postorder (cadr tree))
-       (my-append
-        (postorder (caddr tree))
-        (list (car tree))))))
+      acc
+      (postorder-acc (cadr tree)
+                     (postorder-acc (caddr tree)
+                                    (cons (car tree) acc)))))
+
+(define (postorder tree)
+  (postorder-acc tree '()))
 
 ; S1.a: Print inorder traversal.
 (define (print-inorder tree)
@@ -47,31 +42,28 @@
 (define (print-all-traversals tree)
   (display (inorder tree))
   (newline)
-
   (display (preorder tree))
   (newline)
-
   (display (postorder tree))
   (newline))
 
-; Helper: calculate height and leaf count.
-; Returns a list containing (height leaf-count).
+; Helper: calculate height and leaf count in a single pass.
+; Returns (height leaf-count).
 (define (height-and-leaves tree)
   (if (null? tree)
       '(0 0)
-      (let* ((left-result (height-and-leaves (cadr tree)))
-             (right-result (height-and-leaves (caddr tree)))
-             (left-height (car left-result))
-             (right-height (car right-result))
-             (left-leaves (cadr left-result))
-             (right-leaves (cadr right-result))
-             (height (+ 1 (max left-height right-height)))
-             (leaves
-              (if (and (null? (cadr tree))
-                       (null? (caddr tree)))
-                  1
-                  (+ left-leaves right-leaves))))
-        (list height leaves))))
+      (let* ((left-res (height-and-leaves (cadr tree)))
+             (right-res (height-and-leaves (caddr tree)))
+             (lh (car left-res))
+             (rh (car right-res))
+             (ll (cadr left-res))
+             (rl (cadr right-res))
+             (h (+ 1 (max lh rh)))
+             (leaves (if (and (null? (cadr tree))
+                              (null? (caddr tree)))
+                         1
+                         (+ ll rl))))
+        (list h leaves))))
 
 ; S1.c: Print height and leaf count.
 (define (print-height-and-leaves tree)

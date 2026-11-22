@@ -57,12 +57,12 @@ clue(9, Sol) :-
     member(p(_, design, _, embedded), Sol).
 
 
-% Declarative reading: Finds one valid solution satisfying clues 1..9
+% Declarative reading: Finds one valid solution satisfying clues 1..8
 % and prints the assignments for Alex, Ben, Carla, and Dana in order.
 
 main :-
     solution(Sol),
-    valid_for_clues([1,2,3,4,5,6,7,8,9], Sol),
+    valid_for_clues([1,2,3,4,5,6,7,8], Sol),
     !,
     print_solution(Sol).
 

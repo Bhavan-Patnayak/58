@@ -1,114 +1,77 @@
-:- consult('../code/58_q2.pl').
+:- use_module(library(lists)).
 
-:- begin_tests(q2).
+split_nonempty(List, Left, Right) :-
+    append(Left, Right, List),
+    Left = [_ | _],
+    Right = [_ | _].
 
-% Test evaluation of a single number.
-test(eval_single_number) :-
-    once(expr_eval([7], Tree, Val)),
-    assertion(Tree == num(7)),
-    assertion(Val =:= 7).
+expr_eval([N], num(N), N) :-
+    integer(N),
+    N >= 0.
 
-% Test exact division and division by zero.
-test(eval_exact_division_and_zero_guard) :-
-    findall(V, expr_eval([6, 2], _, V), ValsExact),
-    assertion(member(3, ValsExact)),
-    \+ expr_eval([5, 2], expr('/', _, _), _),
-    \+ expr_eval([4, 0], expr('/', _, _), _).
+expr_eval(Nums, expr(Op, LTree, RTree), Val) :-
+    split_nonempty(Nums, LNums, RNums),
+    expr_eval(LNums, LTree, LVal),
+    expr_eval(RNums, RTree, RVal),
+    apply_op(Op, LVal, RVal, Val).
 
-% Test operator precedence and associativity formatting.
-test(expr_to_string_precedence_and_assoc) :-
-    expr_to_string(
-        expr('+', num(1), expr('*', num(2), num(3))),
-        S1
-    ),
-    assertion(S1 == "1+2*3"),
+apply_op('+', A, B, V) :- V is A + B.
+apply_op('-', A, B, V) :- V is A - B.
+apply_op('*', A, B, V) :- V is A * B.
+apply_op('/', A, B, V) :-
+    B =\= 0,
+    0 =:= A mod B,
+    V is A div B.
 
-    expr_to_string(
-        expr('*', expr('+', num(1), num(2)), num(3)),
-        S2
-    ),
-    assertion(S2 == "(1+2)*3"),
+op_prec('+', 1).
+op_prec('-', 1).
+op_prec('*', 2).
+op_prec('/', 2).
 
-    expr_to_string(
-        expr('-', num(10), expr('-', num(5), num(2))),
-        S3
-    ),
-    assertion(S3 == "10-(5-2)"),
+need_parens_left(_, num(_), false).
+need_parens_left(ParentOp, expr(ChildOp, _, _), Need) :-
+    op_prec(ParentOp, PParent),
+    op_prec(ChildOp, PChild),
+    (PChild < PParent -> Need = true ; Need = false).
 
-    expr_to_string(
-        expr('/', num(20), expr('/', num(10), num(2))),
-        S4
-    ),
-    assertion(S4 == "20/(10/2)").
+need_parens_right(_, num(_), false).
+need_parens_right(ParentOp, expr(ChildOp, _, _), Need) :-
+    op_prec(ParentOp, PParent),
+    op_prec(ChildOp, PChild),
+    (PChild =< PParent -> Need = true ; Need = false).
 
-% Test generation of valid equations.
-test(generate_equation_basic) :-
-    findall(Eq, generate_equation([2, 3, 5], Eq), Eqs),
-    assertion(Eqs \= []),
-    assertion(forall(member(E, Eqs), string(E))).
+expr_to_string(num(N), Str) :-
+    number_string(N, Str).
 
-% Test empty and single-element input lists.
-test(edge_case_short_lists) :-
-    \+ generate_equation([], _),
-    \+ generate_equation([4], _),
+expr_to_string(expr(Op, LTree, RTree), Str) :-
+    expr_to_string(LTree, LRaw),
+    expr_to_string(RTree, RRaw),
+    need_parens_left(Op, LTree, LParens),
+    need_parens_right(Op, RTree, RParens),
+    wrap_parens(LParens, LRaw, LStr),
+    wrap_parens(RParens, RRaw, RStr),
+    atom_string(Op, OpStr),
+    string_concat(LStr, OpStr, T1),
+    string_concat(T1, RStr, Str).
 
-    all_equations([4], Eqs),
-    count_equations([4], Cnt),
+wrap_parens(false, S, S).
+wrap_parens(true, S, Out) :-
+    string_concat("(", S, T),
+    string_concat(T, ")", Out).
 
-    assertion(Eqs == []),
-    assertion(Cnt =:= 0).
+generate_equation(Nums, Eq) :-
+    split_nonempty(Nums, LNums, RNums),
+    expr_eval(LNums, LTree, Val),
+    expr_eval(RNums, RTree, Val),
+    expr_to_string(LTree, LStr),
+    expr_to_string(RTree, RStr),
+    string_concat(LStr, "=", T1),
+    string_concat(T1, RStr, Eq).
 
-% Test that all_equations returns sorted, unique results
-% and count_equations returns the correct count.
-test(all_and_count_equations_consistency) :-
-    all_equations([1, 2, 3], Eqs),
-    count_equations([1, 2, 3], Cnt),
+all_equations(Nums, Eqs) :-
+    findall(Eq, generate_equation(Nums, Eq), RawEqs),
+    sort(RawEqs, Eqs).
 
-    sort(Eqs, SortedUnique),
-    length(SortedUnique, ExpectedLen),
-
-    assertion(Eqs == SortedUnique),
-    assertion(Cnt =:= ExpectedLen).
-
-% Test right-child parentheses for equal precedence.
-test(expr_to_string_right_same_precedence) :-
-    expr_to_string(
-        expr('+', num(1), expr('+', num(2), num(3))),
-        S
-    ),
-    assertion(S == "1+(2+3)").
-
-% Official example: seven valid equations.
-test(assignment_example_seven_equations) :-
-    all_equations([4, 2, 5, 3], Eqs),
-
-    Expected = [
-        "4*2-5=3",
-        "4*2=5+3",
-        "4-2=5-3",
-        "4/2=5-3",
-        "4=2*(5-3)",
-        "4=2+(5-3)",
-        "4=2+5-3"
-    ],
-
-    assertion(Eqs == Expected).
-
-% Official example: no valid equations.
-test(assignment_example_no_equations) :-
-    \+ generate_equation([2, 3, 4], _),
-
-    all_equations([2, 3, 4], Eqs),
-
-    assertion(Eqs == []).
-
-% Official example: exactly one valid equation.
-test(assignment_example_single_equation) :-
-    all_equations([2, 4, 8], Eqs),
-
-    assertion(Eqs == ["2*4=8"]),
-
-    count_equations([2, 4, 8], N),
-    assertion(N =:= 1).
-
-:- end_tests(q2).
+count_equations(Nums, Count) :-
+    all_equations(Nums, Eqs),
+    length(Eqs, Count).

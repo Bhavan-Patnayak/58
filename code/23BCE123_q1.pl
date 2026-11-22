@@ -15,7 +15,7 @@ solution([
     permutation(['AI', web, embedded, data], [P1, P2, P3, P4]).
 
 % clue(+ClueNum, +Solution)
-% Declarative reading: Holds iff ClueNum is 1..8 and clue ClueNum is satisfied by Solution.
+% Declarative reading: Holds iff ClueNum is 1..9 and clue ClueNum is satisfied by Solution.
 clue(1, Sol) :-
     member(p(_, Dept, _, 'AI'), Sol),
     Dept \= research,
@@ -55,14 +55,14 @@ clue(8, Sol) :-
 % CLUE 9: The friend working in the design department prefers embedded projects.
 clue(9, Sol) :-
     member(p(_, design, _, embedded), Sol).
-    % main/0
-% Declarative reading: Finds one valid solution satisfying clues 1..8 and
-% prints the assignments for Alex, Ben, Carla, and Dana in order.
+
+
+% Declarative reading: Finds one valid solution satisfying clues 1..9
+% and prints the assignments for Alex, Ben, Carla, and Dana in order.
 
 main :-
     solution(Sol),
-    member(1, [1]),
-    valid_for_clues([1, 2, 3, 4, 5, 6, 7, 8, 9], Sol),
+    valid_for_clues([1,2,3,4,5,6,7,8,9], Sol),
     !,
     print_solution(Sol).
 
